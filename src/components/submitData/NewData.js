@@ -233,7 +233,7 @@ export default function NewData({ data, onDisconnectDevice, onSetNewDataAvailabl
       const avgValue = validSessions.length > 0 ? sum / validSessions.length : 0;
 
       // Convert duration to minutes for the daily total
-      const durationInMinutes = Math.round(totalDuration / 6000);
+      const durationInMinutes = Math.round(totalDuration / 60000);
 
       // Determine main activity (0 for ccw, 1 for cw, 2 for p)
       let mainActivity = 0; // Default to ccw
