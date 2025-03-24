@@ -76,33 +76,37 @@ export default function DeviceConnect() {
   }
   
   return (
-    <div className="justify-center text-center w-full min-h-screen bg-[#000220] text-white flex flex-col items-center">
-      <div className="w-1/3 bg-gray-200 px-20 py-40 mx-auto rounded-full">
-        <Image />
-      </div>
-      <h3 className={`text-2xl mt-10 font-semibold ${errorState ? 'text-red-600' : connectionStatus === "initialized" ? 'text-green-600' : ''}`}>
-        {statusMessage}
-      </h3>
-      <p className={`p-1 italic ${errorState ? 'text-red-500' : connectionStatus === "initialized" ? 'text-green-500' : 'text-[#9FD3E8]'}`}>
-        {statusDetails}
-      </p>
-      {account && (
-        <p className="mt-2 text-sm text-[#9FD3E8]">
-          Connected wallet: {account.substring(0, 6)}...{account.substring(account.length - 4)}
-        </p>
-      )}
-      
-      <div className="w-1/3">
-        <CTAButton
-          text={buttonText}
-          onClick={handleConnect}
-          disabled={buttonDisabled}
-          className={`w-1/3 mt-10 ${buttonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-        />
-      </div>
-
-      <div className="mt-4">
-        <GhostButton text={"Continue without Device"} link={"/dashboard"} />
+    <div className="justify-center text-center w-full min-h-screen bg-[#000220] text-white flex flex-col items-center py-16">
+      <div className="w-1/2 h-[80vh]">
+      <div className=" h-full px-8 py-8 flex flex-col justify-between">
+          <h3 className={`text-3xl mb-8 font-semibold ${errorState ? 'text-[#BA162A]' : connectionStatus === "initialized" ? 'text-[#51CA22]' : ''}`}>
+            {statusMessage}
+          </h3>
+          <div className="flex-1 flex items-center justify-center px-20 mb-4">
+            <Image className="max-h-full object-contain" />
+          </div>
+          <p className={`p-1 italic ${errorState ? 'text-[#BA162A]' : connectionStatus === "initialized" ? 'text-[#51CA22]' : 'text-[#9FD3E8]'}`}>
+            {statusDetails}
+          </p>
+          {account && (
+            <p className="mt-2 text-sm text-[#9FD3E8]">
+              Connected wallet: {account.substring(0, 6)}...{account.substring(account.length - 4)}
+            </p>
+          )}
+          <div className="w-2/3 mt-8 mx-auto flex gap-5 items-center">
+            <div className="w-full py-2 rounded-2xl text-center bg-[#0E142E]">
+              <GhostButton text={"Skip"} link={"/dashboard"} />
+            </div>
+            <div className="w-full">
+              <CTAButton
+                text={buttonText}
+                onClick={handleConnect}
+                disabled={buttonDisabled}
+                className={`${buttonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
