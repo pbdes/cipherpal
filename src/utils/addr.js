@@ -1,0 +1,1 @@
+export const smartFidgetAddress = process.env.REACT_APP_SMART_CONTRACT_KEY;

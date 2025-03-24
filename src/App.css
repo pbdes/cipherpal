@@ -1,0 +1,35 @@
+.App {
+  text-align: center;
+}
+
+.gradient-stroke {
+  position: relative;
+  padding: 1px;
+  border-radius: 16px;
+  background: linear-gradient(-45deg, rgba(48, 69, 118, 1), rgba(89, 129, 220, 1));
+  display: inline-block;
+}
+
+.gradient-stroke > .content {
+  position: relative;
+  background: #020827;
+  border-radius: 15px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #000220;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #113766;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #121D3A;
+}
