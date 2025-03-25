@@ -17,7 +17,7 @@ export default function AboutDevice({ onNewDataAvailable, deviceConnected, lastU
           {deviceConnected ? (
             <div className="w-full justify-between flex">
               <h1 className="text-2xl font-bold">My Pal</h1>
-              <div className="text-[#9FD3E8]" onClick={handleClick}>
+              <div className="text-[#9FD3E8] hover:text-[#79BDD9] cursor-pointer" onClick={handleClick}>
                 <Disconnect />
               </div>
             </div>

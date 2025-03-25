@@ -427,6 +427,26 @@ export default function NewData({ data, onDisconnectDevice, onSetNewDataAvailabl
     }
   }
 
+  // Calculate the highest value among `cw`, `ccw`, and `p` across all sessions
+  const getDominantValue = (sessions) => {
+    let cwTotal = 0;
+    let ccwTotal = 0;
+    let pTotal = 0;
+
+    sessions.forEach(session => {
+        cwTotal += session.cw || 0;
+        ccwTotal += session.ccw || 0;
+        pTotal += session.p || 0;
+    });
+
+    // Determine the dominant type
+    if (cwTotal >= ccwTotal && cwTotal >= pTotal) return "cw";
+    if (ccwTotal >= cwTotal && ccwTotal >= pTotal) return "ccw";
+    return "p"; // If `p` is the highest
+  };
+
+  const dominantType = getDominantValue(processedData.combinedData);
+
   // Helper function to get upload stage text
   const getUploadStageText = () => {
     switch (uploadStage) {
@@ -451,14 +471,14 @@ export default function NewData({ data, onDisconnectDevice, onSetNewDataAvailabl
         <div className="max-h-full pr-3 overflow-y-auto custom-scrollbar">
           {error && (
             <div className="rounded-2xl my-5 bg-[#140A27] border border-[#BA162A] text-[#E83148] py-4 px-6">
-              <strong className="font-bold">Error:</strong>
+              <strong className="font-bold">Error: </strong>
               <span className="block sm:inline"> {error}</span>
             </div>
           )}
 
           {success && (
             <div className="bg-[#0A1C26] border border-[#51CA22] text-[#51CA22] px-6 py-4 rounded-2xl relative mb-4">
-              <strong className="font-bold">Success!</strong>
+              <strong className="font-bold">Success! </strong>
               <span className="block sm:inline">
                 Data uploaded successfully!
                 {localDataId && (
@@ -482,6 +502,7 @@ export default function NewData({ data, onDisconnectDevice, onSetNewDataAvailabl
             min={processedData.minHB}
             duration={processedData.duration}
             form={true}
+            dominantType={dominantType}
           />
 
           <div>

@@ -15,7 +15,8 @@ export default function DayInfo({
   duration = 0, 
   dataId, 
   form = false, 
-  dominantType 
+  dominantType,
+  BPMshow = true
 }) {
   // Construct URL for Polygon zkEVM Cardona Testnet explorer
   const getPolygonZkEvmExplorerUrl = () => {
@@ -75,13 +76,15 @@ export default function DayInfo({
           <p>Total duration of {duration} min</p>
         </div>
       </div>
-      <div className="flex justify-between items-center px-8 py-2 bg-[#1B1138] text-[#F85ED4] text-xl rounded-full">
-        <Heartbeat text={"min"} val={min} />
-        <Heart />
-        <Heartbeat text={"avg"} val={avg} />
-        <Heart />
-        <Heartbeat text={"max"} val={max} />
-      </div>
+      {BPMshow &&
+        <div className="flex justify-between items-center px-8 py-2 bg-[#1B1138] text-[#F85ED4] text-xl rounded-full">
+          <Heartbeat text={"min"} val={min} />
+          <Heart />
+          <Heartbeat text={"avg"} val={avg} />
+          <Heart />
+          <Heartbeat text={"max"} val={max} />
+        </div>
+      }
     </div>
   );
 }

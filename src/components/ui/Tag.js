@@ -8,7 +8,7 @@ export default function Tag({ tag, selectable = true, handleTagClick }) {
         <div className={cn(
             selected ? "text-[#121D3A] bg-[#9FD3E8]" : "text-[#9FD3E8]",
             selectable ? "cursor-pointer hover:bg-[#020827]" : "text-[#9FD3E8]",
-            "py-1 px-3 rounded-lg text-[#9FD3E8] text-base border border-[#9FD3E8]")}
+            "py-1 px-3 rounded-lg text-base border border-[#9FD3E8]")}
             onClick={() => {
                 if(selectable) {
                     setSelected(prev => !prev)

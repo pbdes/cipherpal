@@ -17,7 +17,7 @@ const placeholder = {
 export default function AboutSession({ notes, session = placeholder, onEdit, onNotes, tot = 3 }) {
     return (
         <div>
-            <header className="">
+            <header className="flex justify-between items-center">
                 <div className="flex gap-5 items-center">
                     <div className="flex items-center font-bold text-xl pb-2 gap-2">
                         <h1 className="font-bold">{(session.id + 1) + "/" + tot}</h1>
@@ -31,10 +31,16 @@ export default function AboutSession({ notes, session = placeholder, onEdit, onN
                         <Heartbeat text={"max"} val={session.max} />
                     </div>
                 </div>
+                <div className="flex justify-end">
+                    <div className="flex gap-2 cursor-pointer" onClick={() => {
+                        onEdit(true);
+                        onNotes({});
+                    }}>
+                        <GhostButtonSmall icon={<Edit />} text={"Edit notes"} />
+                    </div>
+                </div>
             </header>
-
             <div className="text-[#9FD3E8]">{notes.comment}</div>
-
             {notes.mood && (
                 <main className="">
                     <div className="flex flex-wrap gap-2">
@@ -51,16 +57,6 @@ export default function AboutSession({ notes, session = placeholder, onEdit, onN
                     </div>
                 </main>
             )}
-
-            {/* Wrap the button inside a flex container and align to the right */}
-            <div className="flex justify-end mt-3">
-                <div className="flex gap-2 cursor-pointer" onClick={() => {
-                    onEdit(true);
-                    onNotes({});
-                }}>
-                    <GhostButtonSmall icon={<Edit />} text={"Edit notes"} />
-                </div>
-            </div>
         </div>
     );
 }
