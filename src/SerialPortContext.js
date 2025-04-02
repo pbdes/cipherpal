@@ -207,16 +207,20 @@ export const SerialPortProvider = ({ children }) => {
   };
 
   // Function to update device date and time
-  const updateDeviceDateTime = async () => {
+  const updateDeviceDateTime = async (customWriter = null) => {
     console.log("Updating device date and time...");
-    if (writerRef) {
+    
+    // Use the provided writer or fall back to writerRef
+    const writer = customWriter || writerRef;
+    
+    if (writer) {
       try {
         const dateTimeStr = getCurrentDateTime();
         const command = `T:${dateTimeStr}`;
         console.log(`Sending time update: ${command}`);
         
         const encodedCommand = new TextEncoder().encode(command);
-        await writerRef.write(encodedCommand);
+        await writer.write(encodedCommand);
         
         // Wait a bit for the device to process the time update
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -338,7 +342,6 @@ export const SerialPortProvider = ({ children }) => {
     return false;
   };
 
-
   // Function to handle device connection and authentication
   const connectReadSerial = async (account) => {
     setRawData(""); // Clear previous raw data
@@ -402,7 +405,10 @@ export const SerialPortProvider = ({ children }) => {
               const keySuccess = await getAndSendSymmetricKey(writer, reader, controller);
               if (keySuccess) {
                 console.log("Symmetric key registered successfully");
-                await updateDeviceDateTime();
+                
+                // Update device time after successful key registration
+                await updateDeviceDateTime(writer);
+                
                 const startCommand = new TextEncoder().encode("S");
                 await writer.write(startCommand);
               } else {
@@ -478,8 +484,8 @@ export const SerialPortProvider = ({ children }) => {
                   if (symKeySuccess) {
                     console.log("Symmetric key registration completed");
                     
-                    // Update device time after successful registration
-                    await updateDeviceDateTime();
+                    // Update device time after successful registration using writer directly
+                    await updateDeviceDateTime(writer);
                     
                     // Now the device is fully initialized
                     setConnectionStatus("initialized");
@@ -510,8 +516,8 @@ export const SerialPortProvider = ({ children }) => {
                   
                   // If we don't get a NEED_SYMKEY, continue with normal flow
                   if (!confirmResponse.includes("NEED_SYMKEY")) {
-                    // Update device time after wallet registration
-                    await updateDeviceDateTime();
+                    // Update device time after wallet registration using writer directly
+                    await updateDeviceDateTime(writer);
                     
                     // Now the device is initialized, mark this status
                     setConnectionStatus("initialized");
@@ -541,8 +547,8 @@ export const SerialPortProvider = ({ children }) => {
                   console.log("Assuming wallet registration was successful despite no explicit confirmation");
                   setDeviceWallet(account);
                   
-                  // Try to update device time
-                  await updateDeviceDateTime();
+                  // Try to update device time using writer directly
+                  await updateDeviceDateTime(writer);
                   
                   setConnectionStatus("initialized");
                   setDeviceConnected(true);
@@ -659,7 +665,8 @@ export const SerialPortProvider = ({ children }) => {
     // First, update device date and time if possible
     if (writerRef) {
       try {
-        await updateDeviceDateTime();
+        // Use writerRef directly here since we're checking for its existence
+        await updateDeviceDateTime(writerRef);
         
         // Add a longer wait after time update to ensure it's processed
         await new Promise(resolve => setTimeout(resolve, 1000));
