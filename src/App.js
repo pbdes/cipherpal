@@ -136,7 +136,7 @@ function AppContent() {
                   <Header 
                     deviceConnected={deviceConnected} 
                     newRequest={newRequest}
-                    newDataAvailable={newDataAvailable}
+                    newDataAvailable={false}
                     connectionStatus={connectionStatus}
                   />
                   <NewData
