@@ -662,118 +662,116 @@ export const SerialPortProvider = ({ children }) => {
   const disconnectDevice = async () => {
     console.log("Disconnecting device...");
     
-    // First, update device date and time if possible
-    if (writerRef) {
-      try {
-        // Use writerRef directly here since we're checking for its existence
-        await updateDeviceDateTime(writerRef);
-        
-        // Add a longer wait after time update to ensure it's processed
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Now send the disconnect command as a separate operation
-        console.log("Sending 'D' disconnect command to device");
-        const disconnectCommand = new TextEncoder().encode("D\n"); // Add newline for better parsing
-        await writerRef.write(disconnectCommand);
-        
-        // Wait longer to ensure the device processes the command
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        console.log("Disconnect command sent and processed");
-      } catch (error) {
-        console.warn("Error during pre-disconnect operations:", error);
+    // Create a local reference to avoid race conditions
+    const currentWriter = writerRef;
+    const currentReader = readerRef;
+    const currentAbortController = abortController;
+    const currentPort = portD;
+  
+    try {
+      // Step 1: Send time update if possible
+      if (currentWriter) {
+        try {
+          await updateDeviceDateTime(currentWriter);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (timeError) {
+          console.warn("Time update failed:", timeError);
+        }
       }
-    } else {
-      console.warn("No writer available, attempting fallback disconnect method");
-      // Try the regular sendCommand method as fallback
-      const sentCommand = await sendCommand("D\n"); // Add newline
-      if (sentCommand) {
-        console.log("Sent 'D' disconnect command via fallback method");
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      } else {
-        console.warn("Could not send disconnect command to device");
+  
+      // Step 2: Send disconnect command
+      if (currentWriter) {
+        try {
+          console.log("Sending 'D' disconnect command to device");
+          const disconnectCommand = new TextEncoder().encode("D\n");
+          await currentWriter.write(disconnectCommand);
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        } catch (writeError) {
+          console.warn("Disconnect command failed:", writeError);
+          // Attempt fallback
+          if (currentPort?.writable && !currentPort.writable.locked) {
+            try {
+              const tempWriter = currentPort.writable.getWriter();
+              await tempWriter.write(new TextEncoder().encode("D\n"));
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              tempWriter.releaseLock();
+            } catch (fallbackError) {
+              console.warn("Fallback disconnect failed:", fallbackError);
+            }
+          }
+        }
       }
-    }
-    
-    // Only now signal the read loop to stop
-    if (abortController) {
-      try {
-        abortController.abort();
-        console.log("Aborted reading operation");
-      } catch (error) {
-        console.warn("Error aborting read operations:", error);
+  
+      // Step 3: Signal read loop to stop
+      if (currentAbortController) {
+        currentAbortController.abort();
       }
-      setAbortController(null);
-    }
-    
-    // Wait before releasing locks
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Release the reader lock if necessary
-    if (readerRef) {
-      try {
-        readerRef.releaseLock();
-        console.log("Reader lock released");
-      } catch (error) {
-        console.warn("Error releasing reader lock:", error);
+  
+      // Step 4: Clean up resources
+      await new Promise(resolve => setTimeout(resolve, 500));
+  
+      // Release reader if it exists
+      if (currentReader) {
+        try {
+          await currentReader.cancel();
+          currentReader.releaseLock();
+        } catch (readerError) {
+          console.warn("Reader cleanup error:", readerError);
+        }
       }
-      setReaderRef(null);
-    }
-    
-    // Release the writer lock if necessary
-    if (writerRef) {
-      try {
-        writerRef.releaseLock();
-        console.log("Writer lock released");
-      } catch (error) {
-        console.warn("Error releasing writer lock:", error);
+  
+      // Release writer if it exists
+      if (currentWriter) {
+        try {
+          await currentWriter.close();
+        } catch (writerError) {
+          console.warn("Writer close error:", writerError);
+          try {
+            currentWriter.releaseLock();
+          } catch (releaseError) {
+            console.warn("Writer release error:", releaseError);
+          }
+        }
       }
+  
+      // Force unlock if needed
+      if (currentPort) {
+        try {
+          if (currentPort.readable?.locked) {
+            const tempReader = currentPort.readable.getReader();
+            await tempReader.cancel();
+            tempReader.releaseLock();
+          }
+          if (currentPort.writable?.locked) {
+            const tempWriter = currentPort.writable.getWriter();
+            await tempWriter.abort();
+            tempWriter.releaseLock();
+          }
+        } catch (forceError) {
+          console.warn("Force unlock error:", forceError);
+        }
+      }
+  
+      // Close the port
+      if (currentPort) {
+        try {
+          await currentPort.close();
+        } catch (closeError) {
+          console.warn("Port close error:", closeError);
+        }
+      }
+    } finally {
+      // Reset all state
+      setDeviceConnected(false);
+      setConnectionStatus("disconnected");
+      setRawData("");
+      setData("");
+      setHasDataToUpload(false);
       setWriterRef(null);
-    }
-    
-    // Allow time for locks to be released
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Force all streams to unlock
-    await forceUnlockStreams();
-    
-    // Clean up port
-    await closePort();
-    
-    // Update state
-    setDeviceConnected(false);
-    setConnectionStatus("disconnected");
-    setRawData("");
-    setData("");
-    setHasDataToUpload(false);
-    console.log("Device disconnection complete");
-  };
-
-  // Helper function to forcefully unlock streams
-  const forceUnlockStreams = async () => {
-    if (!portD) return;
-    console.log("Attempting to force unlock streams...");
-    
-    // Try to forcefully cancel and recreate streams
-    if (portD.readable && portD.readable.locked) {
-      try {
-        // This is a hack to force unlock a stream
-        const tempReader = portD.readable.getReader();
-        tempReader.cancel().catch(e => console.warn("Error canceling reader:", e));
-        tempReader.releaseLock();
-      } catch (error) {
-        console.warn("Could not force unlock readable stream:", error);
-      }
-    }
-    
-    if (portD.writable && portD.writable.locked) {
-      try {
-        // This is a hack to force unlock a stream
-        const tempWriter = portD.writable.getWriter();
-        tempWriter.abort().catch(e => console.warn("Error aborting writer:", e));
-        tempWriter.releaseLock();
-      } catch (error) {
-        console.warn("Could not force unlock writable stream:", error);
-      }
+      setReaderRef(null);
+      setAbortController(null);
+      setPortD(null);
+      console.log("Device disconnection complete");
     }
   };
 

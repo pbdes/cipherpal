@@ -244,7 +244,7 @@ export default function NewData({ data, onDisconnectDevice, onSetNewDataAvailabl
       }
 
       // Get the date from the second session IMPORTANT: IT IS A TEMPORARY FIX RELATED TO THE BUG ON THE DEVICE
-      const date = validSessions[1]?.date || "21.4.25";
+      const date = validSessions[1]?.date || validSessions[0]?.date || "";
 
       // Update state with processed data
       setProcessedData({
