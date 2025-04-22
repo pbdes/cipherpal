@@ -244,7 +244,25 @@ export default function NewData({ data, onDisconnectDevice, onSetNewDataAvailabl
       }
 
       // Get the date from the second session IMPORTANT: IT IS A TEMPORARY FIX RELATED TO THE BUG ON THE DEVICE
-      const date = validSessions[1]?.date || validSessions[0]?.date || "";
+      const now = new Date();
+    
+      // Format: YYYY-MM-DD HH:MM:SS
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      let date;
+
+      if (validSessions[0].date === "14.4.25") {
+        if(validSessions[1].date) {
+          if (validSessions[1].date === "14.4.25") {
+            date = `${day}.${month}.${year}`;
+          } else {
+            date = validSessions[1].date;
+          }
+        }
+      } else {
+        date = validSessions[0].date;
+      }
 
       // Update state with processed data
       setProcessedData({
